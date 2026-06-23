@@ -1,0 +1,7 @@
+.venv/
+.env
+*.db
+clojuredocs-export.json
+clojuredocs-translated.json
+node_modules/
+dist/
