@@ -37,13 +37,16 @@ jobs:
           node-version: 22
 
       - run: npm ci
+
       - run: npm run build
+
+      - run: find . -type d -name dist
 
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: frontend/dist
 
       - uses: actions/deploy-pages@v4
       
