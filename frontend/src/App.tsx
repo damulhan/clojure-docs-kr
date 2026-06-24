@@ -218,7 +218,7 @@ export default function App() {
               ref={searchInputRef}
               type="text"
               className="search-input"
-              placeholder="함수명, 초성 검색 (예: ㅁ) (Ctrl+S)"
+              placeholder="함수명, 초성 검색 (Ctrl+S)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
