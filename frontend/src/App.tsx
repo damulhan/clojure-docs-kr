@@ -80,7 +80,7 @@ export default function App() {
 
   // Load Data
   useEffect(() => {
-    fetch('/clojuredocs-translated.json')
+    fetch(`${import.meta.env.BASE_URL}clojuredocs-translated.json`)
       .then((res) => res.json())
       .then((json: ExportData) => {
         setData(json);
