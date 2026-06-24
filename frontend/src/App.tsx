@@ -100,7 +100,23 @@ export default function App() {
   }, []);
 
   const mainPanelRef = useRef<HTMLDivElement>(null);
-  
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Shortcut to focus search (Ctrl+S / Cmd+S)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+          searchInputRef.current.select();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   // Theme Sync
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -199,9 +215,10 @@ export default function App() {
           <div className="search-container">
             <Search className="search-icon" size={18} />
             <input
+              ref={searchInputRef}
               type="text"
               className="search-input"
-              placeholder="함수명, 초성 검색 (예: ㅁ)"
+              placeholder="함수명, 초성 검색 (예: ㅁ) (Ctrl+S)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={(e) => {
