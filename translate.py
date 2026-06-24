@@ -17,8 +17,8 @@ DEFAULT_DELAY = 0.2  # OpenRouter has much higher RPM, 0.2s is fast and safe
 def get_env_config():
     config = {
         "api_key": None,
-        "base_url": "https://openrouter.ai/api/v1",
-        "model": "deepseek/deepseek-v4-flash"
+        "base_url": None,
+        "model": None
     }
     if os.path.exists(".env"):
         with open(".env", "r", encoding="utf-8") as f:
@@ -40,10 +40,16 @@ def get_env_config():
     # Fallback to os.environ
     if not config["api_key"]:
         config["api_key"] = os.environ.get("OPENAI_API_KEY")
-    if os.environ.get("OPENAI_BASE_URL"):
-        config["base_url"] = os.environ.get("OPENAI_BASE_URL")
-    if os.environ.get("OPENAI_MODEL"):
-        config["model"] = os.environ.get("OPENAI_MODEL")
+
+    # Set defaults based on api_key type
+    is_openrouter = config["api_key"] and config["api_key"].startswith("sk-or-")
+    default_base = "https://openrouter.ai/api/v1" if is_openrouter else "https://api.openai.com/v1"
+    default_model = "deepseek/deepseek-v4-flash" if is_openrouter else "gpt-4o-mini"
+
+    if not config["base_url"]:
+        config["base_url"] = os.environ.get("OPENAI_BASE_URL") or default_base
+    if not config["model"]:
+        config["model"] = os.environ.get("OPENAI_MODEL") or default_model
         
     return config
 

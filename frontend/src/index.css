@@ -154,7 +154,7 @@ body {
 
 .search-input {
   width: 100%;
-  padding: 10px 12px 10px 38px;
+  padding: 10px 34px 10px 38px;
   background-color: var(--bg);
   border: 1px solid var(--card-border);
   border-radius: var(--radius-md);
@@ -175,6 +175,27 @@ body {
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
+}
+
+.search-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 50%;
+}
+
+.search-clear-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--card-border);
 }
 
 /* Select Dropdown */

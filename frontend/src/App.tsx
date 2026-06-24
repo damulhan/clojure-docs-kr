@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Sun, Moon, Copy, Check, ExternalLink, HelpCircle } from 'lucide-react';
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { Search, Sun, Moon, Copy, Check, X } from 'lucide-react';
 import { marked } from 'marked';
 import Prism from 'prismjs';
 import 'prismjs/themes/prism-tomorrow.css';
@@ -39,7 +39,7 @@ interface VarItem {
   name: string;
   type: string;
   doc: string | null;
-  arglists: string[][];
+  arglists: string[];
   examples: Example[] | null;
   notes: Note[] | null;
   see_alsos?: SeeAlso[] | null;
@@ -76,7 +76,7 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedVarName, setSelectedVarName] = useState<string>('def');
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
+  const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   // Load Data
   useEffect(() => {
@@ -99,10 +99,19 @@ export default function App() {
       });
   }, []);
 
+  const mainPanelRef = useRef<HTMLDivElement>(null);
+  
   // Theme Sync
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  // Scroll main panel to top on selection change
+  useEffect(() => {
+    if (mainPanelRef.current) {
+      mainPanelRef.current.scrollTop = 0;
+    }
+  }, [selectedVarName]);
 
   // Trigger Syntax Highlighting
   useEffect(() => {
@@ -120,33 +129,33 @@ export default function App() {
   // Filter vars by selected namespace & search query (including choseong)
   const filteredVars = useMemo(() => {
     if (!data) return [];
-    
+
     return data.vars.filter((v) => {
       // 1. Namespace Filter
       if (selectedNamespace !== 'All' && v.ns !== selectedNamespace) {
         return false;
       }
-      
+
       // 2. Search Query Filter
       if (!searchQuery) return true;
-      
+
       const q = searchQuery.toLowerCase().trim();
       const name = v.name.toLowerCase();
       const ns = v.ns.toLowerCase();
       const doc = (v.doc || '').toLowerCase();
-      
+
       // Check exact match or inclusion
       if (name.includes(q) || ns.includes(q) || doc.includes(q)) {
         return true;
       }
-      
+
       // Check Korean Initial Consonant (초성) Match
       const nameChoseong = getChoseong(v.name);
       const docChoseong = getChoseong(v.doc || '');
       if (nameChoseong.includes(q) || docChoseong.includes(q)) {
         return true;
       }
-      
+
       return false;
     });
   }, [data, selectedNamespace, searchQuery]);
@@ -169,9 +178,9 @@ export default function App() {
   };
 
   // Convert Markdown safely
-  const renderMarkdown = (md: string | null) => {
-    if (!md) return '';
-    return { __html: marked.parse(md) };
+  const renderMarkdown = (md: string | null): { __html: string } => {
+    if (!md) return { __html: '' };
+    return { __html: marked.parse(md) as string };
   };
 
   return (
@@ -186,7 +195,7 @@ export default function App() {
               <span className="logo-sub">한글 번역 사이트</span>
             </div>
           </div>
-          
+
           <div className="search-container">
             <Search className="search-icon" size={18} />
             <input
@@ -195,7 +204,23 @@ export default function App() {
               placeholder="함수명, 초성 검색 (예: ㅁ)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && filteredVars.length > 0) {
+                  const firstVar = filteredVars[0];
+                  setSelectedVarName(`${firstVar.ns}/${firstVar.name}`);
+                }
+              }}
             />
+            {searchQuery && (
+              <button
+                type="button"
+                className="search-clear-btn"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
 
           <select
@@ -235,7 +260,7 @@ export default function App() {
       </aside>
 
       {/* Main Content */}
-      <main className="main-panel">
+      <main ref={mainPanelRef} className="main-panel">
         {activeVar ? (
           <>
             {/* Header */}
@@ -263,7 +288,7 @@ export default function App() {
                   <div className="arglist-container">
                     {activeVar.arglists.map((args, idx) => (
                       <div key={idx} className="arglist-card">
-                        ({activeVar.name} {args.join(' ')})
+                        ({activeVar.name} {args})
                       </div>
                     ))}
                   </div>
@@ -273,7 +298,7 @@ export default function App() {
               {/* Description Section */}
               <div className="detail-section">
                 <h2 className="section-title">설명 (Description)</h2>
-                <div 
+                <div
                   className="docstring-content"
                   dangerouslySetInnerHTML={renderMarkdown(activeVar.doc)}
                 />
